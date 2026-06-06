@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Asisten Kredit Gadget</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#c9a84c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="KreditGadget">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0e0e12;
+            --ink-soft: #4a4a5a;
+            --ink-muted: #8e8ea0;
+            --paper: #f8f6f1;
+            --paper-warm: #f0ede4;
+            --gold: #c9a84c;
+            --gold-light: #e8d08a;
+            --gold-dark: #9a7a2f;
+            --accent: #2d6a4f;
+            --accent-light: #52b788;
+            --danger: #c1121f;
+            --surface: rgba(255,255,255,0.72);
+            --surface-hover: rgba(255,255,255,0.9);
+            --border: rgba(201, 168, 76, 0.25);
+            --shadow-sm: 0 2px 8px rgba(14,14,18,0.06);
+            --shadow-md: 0 6px 24px rgba(14,14,18,0.1);
+            --shadow-gold: 0 4px 20px rgba(201,168,76,0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* Ornamental background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(45,106,79,0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            padding: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* === APP HEADER === */
+        .app-header {
+            text-align: center;
+            padding: 28px 20px 18px;
+            position: relative;
+        }
+        .app-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--gold);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+        .app-header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 26px;
+            color: var(--ink);
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+        .app-header h1 span { color: var(--gold); }
+        .app-header p {
+            font-size: 12px;
+            color: var(--ink-muted);
+            margin-top: 4px;
+            letter-spacing: 0.3px;
+        }
+        .header-divider {
+            width: 40px; height: 2px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            margin: 12px auto 0;
+            border-radius: 2px;
+        }
+
+        /* === CARDS === */
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 22px 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-md);
+            transition: box-shadow 0.3s;
+        }
+
+        .card-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 18px;
+            color: var(--ink);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title-icon {
+            width: 30px; height: 30px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--ink-muted);
+            margin-bottom: 16px;
+            padding-left: 38px;
+        }
+
+        /* === NOTIFICATION BADGE === */
+        .notif-badge {
+            background: linear-gradient(135deg, #fff3cd, #fef9e7);
+            border: 1px solid #e6c96a;
+            color: #856404;
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            border-left: 4px solid var(--gold);
+            line-height: 1.6;
+        }
+
+        /* === FORM ELEMENTS === */
+        .form-group { margin-bottom: 14px; }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1.5px solid rgba(14,14,18,0.1);
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            background: rgba(255,255,255,0.8);
+            color: var(--ink);
+            transition: all 0.25s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input::placeholder, textarea::placeholder { color: var(--ink-muted); }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+        }
+        textarea { resize: vertical; min-height: 70px; }
+
+        /* === BUTTONS === */
+        .btn {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
+        }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            box-shadow: var(--shadow-gold);
+        }
+        .btn-gold:hover { box-shadow: 0 6px 24px rgba(201,168,76,0.35); }
+
+        .btn-green {
+            background: linear-gradient(135deg, #40916c 0%, #1b4332 100%);
+            box-shadow: 0 4px 16px rgba(27,67,50,0.25);
+        }
+
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            margin-top: 10px;
+            box-shadow: 0 4px 16px rgba(37,211,102,0.25);
+        }
+
+        .btn-dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #c1121f 0%, #780000 100%);
+        }
+
+        .btn-sm {
+            width: auto;
+            padding: 13px 18px;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        /* === CHAT === */
+        .chat-area {
+            max-height: 260px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(255,255,255,0.4);
+            border: 1px solid rgba(14,14,18,0.07);
+            border-radius: 14px;
+            scroll-behavior: smooth;
+        }
+        .chat-area::-webkit-scrollbar { width: 4px; }
+        .chat-area::-webkit-scrollbar-track { background: transparent; }
+        .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .chat-bubble {
+            padding: 10px 14px;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            max-width: 88%;
+            font-size: 14px;
+            line-height: 1.55;
+            animation: bubbleIn 0.25s ease;
+        }
+        @keyframes bubbleIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-user {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-ai {
+            background: white;
+            color: var(--ink);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(14,14,18,0.06);
+            white-space: pre-wrap;
+            box-shadow: var(--shadow-sm);
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .chat-input-row input { margin: 0; }
+
+        /* === API KEY FIELD === */
+        .api-key-field {
+            background: linear-gradient(135deg, #fefce8, #fef9e7);
+            border: 1.5px solid #e6c96a;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+        .api-key-field label {
+            color: #92400e;
+        }
+        .api-key-field input {
+            background: rgba(255,255,255,0.9);
+            border-color: #e6c96a;
+        }
+        .api-key-field input:focus {
+            border-color: var(--gold-dark);
+        }
+
+        /* === KEUANGAN SUMMARY === */
+        .keuangan-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .keuangan-item {
+            background: rgba(255,255,255,0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .keuangan-item-label {
+            font-size: 12px;
+            color: var(--ink-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .keuangan-item-value {
+            font-family: 'DM Serif Display', serif;
+            font-size: 16px;
+            color: var(--ink);
+        }
+        .keuangan-item.modal .keuangan-item-value { color: var(--danger); }
+        .keuangan-item.masuk .keuangan-item-value { color: var(--accent); }
+        .keuangan-item.piutang .keuangan-item-value { color: var(--gold-dark); }
+
+        /* === NOTA BOX === */
+        .nota-box {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1.5px solid #86efac;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 13px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            color: var(--ink);
+            margin-top: 16px;
+            border-left: 4px solid var(--accent-light);
+        }
+
+        /* === SOURCING RESULT === */
+        .sourcing-result {
+            background: rgba(255,255,255,0.7);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+        .sourcing-result p { color: var(--ink-soft); margin-bottom: 12px; font-size: 13px; }
+
+        /* === SECTION NAVIGATION === */
+        .app-section { display: none; }
+        .app-section.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === BOTTOM NAV === */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(248,246,241,0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(201,168,76,0.2);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0 14px;
+            box-shadow: 0 -4px 24px rgba(14,14,18,0.06);
+            z-index: 1000;
+        }
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--ink-muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 10px;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            padding: 4px 12px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            min-width: 60px;
+        }
+        .nav-item.active {
+            color: var(--gold-dark);
+            background: rgba(201,168,76,0.1);
+        }
+        .nav-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+        .nav-label { letter-spacing: 0.3px; }
+
+        /* === LOADING INDICATOR === */
+        .chat-loading {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+            border: 1px solid rgba(14,14,18,0.06);
+            box-shadow: var(--shadow-sm);
+        }
+        .chat-loading span {
+            width: 6px; height: 6px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+        .chat-loading span:nth-child(2) { animation-delay: 0.2s; }
+        .chat-loading span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce {
+            0%,60%,100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* === DIVIDER === */
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(14,14,18,0.07);
+            margin: 16px 0;
+        }
+
+        /* small print */
+        .text-muted { color: var(--ink-muted); font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- APP HEADER -->
+    <div class="app-header">
+        <div class="app-header-badge">✦ IND-DOC PDF PRO</div>
+        <h1>Asisten Bisnis <span>Gadget</span></h1>
+        <p>Kelola kredit, piutang & keuangan toko Anda</p>
+        <div class="header-divider"></div>
+    </div>
+
+    <!-- SECTION: DASHBOARD -->
+    <div id="sec-dashboard" class="app-section active">
+
+        <!-- Banner Install PWA -->
+        <div id="bannerInstall" style="display:none; background:linear-gradient(135deg,#1a1a2e,#16213e); color:white; border-radius:16px; padding:16px 18px; margin-bottom:16px;">
+            <div style="font-weight:600; font-size:14px; margin-bottom:4px;">📲 Install sebagai App</div>
+            <div style="font-size:12px; opacity:0.8; margin-bottom:12px;">Tambahkan ke layar utama HP untuk notifikasi jatuh tempo otomatis.</div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-gold" style="padding:10px 16px; font-size:13px;" onclick="installPWA()">Install Sekarang</button>
+                <button class="btn" style="background:rgba(255,255,255,0.15); padding:10px 16px; font-size:13px;" onclick="document.getElementById('bannerInstall').style.display='none'">Nanti</button>
+            </div>
+        </div>
+
+        <!-- Banner Aktifkan Notifikasi -->
+        <div id="bannerNotif" style="display:none; background:linear-gradient(135deg,#92400e,#78350f); color:white; border-radius:16px; padding:16px 18px; margin-bottom:16px;">
+            <div style="font-weight:600; font-size:14px; margin-bottom:4px;">🔔 Aktifkan Notifikasi</div>
+            <div style="font-size:12px; opacity:0.85; margin-bottom:12px;">Izinkan notifikasi agar pengingat jatuh tempo bisa muncul otomatis di HP Anda.</div>
+            <button class="btn btn-gold" style="padding:10px 16px; font-size:13px;" onclick="mintaIzinNotifikasi()">Aktifkan Notifikasi</button>
+        </div>
+
+        <div id="badgeJatuhTempo" class="notif-badge"></div>
+
+        <!-- CLAUDE AI STATUS -->
+        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:1.5px solid #86efac; border-radius:14px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">🤖</span>
+            <div>
+                <div style="font-size:12px; font-weight:700; color:#166534; text-transform:uppercase; letter-spacing:0.6px;">Claude AI · Haiku 4.5</div>
+                <div style="font-size:12px; color:#15803d; margin-top:2px;">✅ Siap digunakan — tidak perlu API Key</div>
+            </div>
+        </div>
+
+        <!-- CHAT AI -->
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-icon">🤖</div>
+                Tanya Claude AI
+            </div>
+            <div class="card-subtitle">Tanyakan data pelanggan, cicilan, atau laporan</div>
+
+            <div class="chat-area" id="boxPercakapan">
+                <div class="chat-bubble chat-ai">Halo! Saya Claude AI, asisten Anda. Tanyakan apa saja mengenai data pelanggan, cicilan jatuh tempo, atau laporan keuangan yang tersimpan di perangkat ini. ✨</div>
+            </div>
+
+            <div class="chat-input-row">
+                <input type="text" id="pesanUser" placeholder="Misal: Siapa yang jatuh tempo H-5?" onkeydown="if(event.key==='Enter') tanyaAsistenClaude()">
+                <button class="btn btn-gold btn-sm" onclick="tanyaAsistenClaude()">
+                    Kirim ➤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION: SOURCING -->
+    <div id="sec-sourcing" class="app-section">
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-icon">🔍</div>
+                Riset Harga Pasar
+            </div>
+            <div class="card-subtitle">Cek referensi harga di marketplace utama</div>
+
+            <div class="form-group">
+                <label>Nama Gadget yang Dicari</label>
+                <input type="text" id="cariBarang" placeholder="Contoh: iPhone 13 seken" onkeydown="if(event.key==='Enter') cariDiOlshop()">
+            </div>
+            <button class="btn btn-gold" onclick="cariDiOlshop()">🔍 Cari Referensi Harga</button>
+
+            <div id="hasilSourcing"></div>
+        </div>
+    </div>
+
+    <!-- SECTION: PENDAFTARAN KREDIT -->
+    <div id="sec-pendaftaran" class="app-section">
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-icon">📝</div>
+                Pendaftaran Kredit Baru
+            </div>
+            <div class="card-subtitle">Lengkapi data pelanggan & gadget</div>
+
+            <div class="form-group"><label>Nama Pelanggan</label><input type="text" id="f-nama" placeholder="Nama Lengkap"></div>
+            <div class="form-group"><label>Nomor WhatsApp</label><input type="tel" id="f-no" placeholder="08123456789"></div>
+            <div class="form-group"><label>Alamat Pengiriman</label><textarea id="f-alamat" rows="2" placeholder="Jalan, RT/RW, Kecamatan, Kota"></textarea></div>
+            <hr class="divider">
+            <div class="form-group"><label>Nama Gadget</label><input type="text" id="f-gadget" placeholder="Contoh: iPhone 14 Pro"></div>
+            <div class="form-group"><label>Harga Modal (Rp)</label><input type="number" id="f-modal" placeholder="Harga beli Anda"></div>
+            <div class="form-group"><label>Harga Jual Toko (Rp)</label><input type="number" id="f-jual" placeholder="Harga kesepakatan jual"></div>
+            <div class="form-group"><label>Uang Muka / DP (Rp)</label><input type="number" id="f-dp" placeholder="Isi 0 jika tanpa DP" value="0"></div>
+            <hr class="divider">
+            <div class="form-group"><label>Tenor (Bulan)</label><input type="number" id="f-tenor" placeholder="Contoh: 6"></div>
+            <div class="form-group"><label>Bunga Flat Per Bulan (%)</label><input type="number" id="f-bunga" value="2" step="0.1"></div>
+            <div class="form-group"><label>Tanggal Jatuh Tempo Bulanan</label><input type="number" id="f-tgl" placeholder="Contoh: 5" min="1" max="31"></div>
+
+            <button class="btn btn-gold" onclick="simpanPelanggan()">💾 Hitung & Simpan Kredit</button>
+
+            <div id="boxNotaAksi" style="display: none;">
+                <hr class="divider">
+                <div id="isiNotaTeks" class="nota-box"></div>
+                <button class="btn btn-whatsapp" id="btnKirimNota">💬 Kirim Nota Resmi ke WA Pelanggan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION: KEUANGAN -->
+    <div id="sec-keuangan" class="app-section">
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-icon">💰</div>
+                Laporan Keuangan
+            </div>
+            <div class="card-subtitle">Ringkasan laba rugi & piutang berjalan</div>
+
+            <div class="keuangan-grid">
+                <div class="keuangan-item modal">
+                    <div>
+                        <div class="keuangan-item-label">Total Modal Keluar</div>
+                        <div class="keuangan-item-value" id="totalModal">Rp 0</div>
+                    </div>
+                    <span style="font-size:24px;">📤</span>
+                </div>
+                <div class="keuangan-item masuk">
+                    <div>
+                        <div class="keuangan-item-label">Uang Masuk (DP + Cicilan)</div>
+                        <div class="keuangan-item-value" id="totalMasuk">Rp 0</div>
+                    </div>
+                    <span style="font-size:24px;">📥</span>
+                </div>
+                <div class="keuangan-item piutang">
+                    <div>
+                        <div class="keuangan-item-label">Sisa Piutang Berjalan</div>
+                        <div class="keuangan-item-value" id="totalPiutang">Rp 0</div>
+                    </div>
+                    <span style="font-size:24px;">📋</span>
+                </div>
+            </div>
+
+            <button class="btn btn-danger" onclick="hapusSemuaDataPermanen()">
+                ⚠️ Hapus Semua Data (Zero Storage)
+            </button>
+            <p class="text-muted" style="text-align:center; margin-top:10px;">Tindakan ini tidak dapat dibatalkan</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom-nav">
+    <button class="nav-item active" onclick="pindahHalaman('sec-dashboard', this)">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="pindahHalaman('sec-sourcing', this)">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Sourcing</span>
+    </button>
+    <button class="nav-item" onclick="pindahHalaman('sec-pendaftaran', this)">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">Daftar</span>
+    </button>
+    <button class="nav-item" onclick="pindahHalaman('sec-keuangan', this)">
+        <span class="nav-icon">💰</span>
+        <span class="nav-label">Keuangan</span>
+    </button>
+</div>
+
+<!-- Script biasa: semua fungsi global (tidak pakai module agar onclick di HTML bisa akses) -->
+<script>
+    // === INISIALISASI ===
+    window.onload = function() {
+        perbaruiDashboardDanKeuangan();
+        aturAutoScrollKeyboard();
+    };
+
+    // === NAVIGASI ===
+    function pindahHalaman(sectionId, element) {
+        document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        element.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // === AUTO SCROLL KEYBOARD ===
+    function aturAutoScrollKeyboard() {
+        document.querySelectorAll('input, textarea, select').forEach(input => {
+            input.addEventListener('focus', () => {
+                setTimeout(() => input.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+            });
+        });
+    }
+
+    // === SIMPAN PELANGGAN KREDIT ===
+    function simpanPelanggan() {
+        const nama    = document.getElementById("f-nama").value.trim();
+        let   noHp    = document.getElementById("f-no").value.trim();
+        const alamat  = document.getElementById("f-alamat").value.trim();
+        const gadget  = document.getElementById("f-gadget").value.trim();
+        const modal   = parseFloat(document.getElementById("f-modal").value);
+        const jual    = parseFloat(document.getElementById("f-jual").value);
+        const dp      = parseFloat(document.getElementById("f-dp").value || 0);
+        const tenor   = parseInt(document.getElementById("f-tenor").value);
+        const bunga   = parseFloat(document.getElementById("f-bunga").value);
+        const tglJatuhTempo = document.getElementById("f-tgl").value;
+
+        if (!nama || !noHp || !alamat || !gadget || !modal || !jual || !tenor || !tglJatuhTempo) {
+            alert("⚠️ Mohon lengkapi semua kolom form pendaftaran!");
+            return;
+        }
+        if (tenor < 1 || tenor > 60) { alert("⚠️ Tenor harus antara 1-60 bulan."); return; }
+        if (parseInt(tglJatuhTempo) < 1 || parseInt(tglJatuhTempo) > 31) { alert("⚠️ Tanggal jatuh tempo harus 1-31."); return; }
+
+        noHp = noHp.replace(/\D/g, '');
+        if (noHp.startsWith("0")) noHp = "62" + noHp.slice(1);
+
+        const pokokHutang      = jual - dp;
+        const cicilanPokok     = pokokHutang / tenor;
+        const bungaPerBulan    = pokokHutang * (bunga / 100);
+        const angsuranPerBulan = Math.ceil(cicilanPokok + bungaPerBulan);
+        const totalBayar       = dp + (angsuranPerBulan * tenor);
+        const totalKeuntungan  = jual - modal;
+
+        const dataBaru = {
+            nama, noHp, alamat, gadget, modal, jual, dp, tenor,
+            bunga, angsuranPerBulan, tglJatuhTempo, totalBayar, totalKeuntungan,
+            tglDaftar: new Date().toLocaleDateString('id-ID')
+        };
+
+        let list = JSON.parse(localStorage.getItem("gadget_customers")) || [];
+        list.push(dataBaru);
+        localStorage.setItem("gadget_customers", JSON.stringify(list));
+
+        const teksNota =
+`Yth. Bapak/Ibu ${nama},
+
+Terima kasih telah mempercayakan kebutuhan gadget Anda kepada kami.
+Berikut rincian resmi kredit gadget yang telah terdaftar:
+
+📱 Unit    : ${gadget}
+📍 Alamat  : ${alamat}
+💵 Harga   : Rp ${jual.toLocaleString('id-ID')}
+💳 DP      : Rp ${dp.toLocaleString('id-ID')}
+📆 Tenor   : ${tenor} Bulan
+💰 Angsuran: Rp ${angsuranPerBulan.toLocaleString('id-ID')}/bulan
+🗓️ Jth Tempo: Tgl ${tglJatuhTempo} setiap bulan
+📊 Total Bayar: Rp ${totalBayar.toLocaleString('id-ID')}
+
+Data ini tersimpan resmi dalam sistem kami.
+Harap melakukan pembayaran tepat waktu untuk menghindari denda.
+
+Terima kasih atas kepercayaan Anda. 🙏`;
+
+        document.getElementById("isiNotaTeks").innerText = teksNota;
+        document.getElementById("boxNotaAksi").style.display = "block";
+
+        document.getElementById("btnKirimNota").onclick = function() {
+            window.open(`https://api.whatsapp.com/send?phone=${noHp}&text=${encodeURIComponent(teksNota)}`, '_blank');
+        };
+
+        perbaruiDashboardDanKeuangan();
+
+        ['f-nama','f-no','f-alamat','f-gadget','f-modal','f-jual','f-tenor','f-tgl'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('f-dp').value = '0';
+        document.getElementById('f-bunga').value = '2';
+
+        alert(`✅ Data kredit ${nama} berhasil disimpan!`);
+    }
+
+    // === UPDATE DASHBOARD & KEUANGAN ===
+    function perbaruiDashboardDanKeuangan() {
+        const list = JSON.parse(localStorage.getItem("gadget_customers")) || [];
+        const tglHariIni = new Date().getDate();
+
+        let tModal = 0, tMasuk = 0, tPiutang = 0;
+        let infoH5 = [];
+
+        list.forEach(p => {
+            tModal   += p.modal || 0;
+            tMasuk   += (p.dp || 0) + (p.angsuranPerBulan || 0);
+            tPiutang += ((p.angsuranPerBulan || 0) * (p.tenor || 0)) - (p.angsuranPerBulan || 0);
+
+            const selisih = parseInt(p.tglJatuhTempo) - tglHariIni;
+            if (selisih >= 0 && selisih <= 5) {
+                infoH5.push(`• ${p.nama} — ${p.gadget} | Angsuran: Rp ${(p.angsuranPerBulan||0).toLocaleString('id-ID')} (H-${selisih})`);
+            }
+        });
+
+        document.getElementById("totalModal").innerText   = "Rp " + tModal.toLocaleString('id-ID');
+        document.getElementById("totalMasuk").innerText   = "Rp " + tMasuk.toLocaleString('id-ID');
+        document.getElementById("totalPiutang").innerText = "Rp " + tPiutang.toLocaleString('id-ID');
+
+        const badge = document.getElementById("badgeJatuhTempo");
+        if (infoH5.length > 0) {
+            badge.innerHTML = `<strong>⏰ Pengingat Jatuh Tempo (H-0 s/d H-5):</strong><br><br>${infoH5.join('<br>')}<br><br><span class="text-muted">Tanyakan ke AI untuk draf pesan tagihan otomatis.</span>`;
+            badge.style.display = "block";
+        } else {
+            badge.style.display = "none";
+        }
+    }
+
+    // === SOURCING ===
+    function cariDiOlshop() {
+        const barang = document.getElementById("cariBarang").value.trim();
+        const boxHasil = document.getElementById("hasilSourcing");
+        if (!barang) return;
+
+        const urlShopee    = `https://shopee.co.id/search?keyword=${encodeURIComponent(barang)}`;
+        const urlTokopedia = `https://www.tokopedia.com/search?q=${encodeURIComponent(barang)}`;
+        const urlBukalapak = `https://www.bukalapak.com/products?search[keywords]=${encodeURIComponent(barang)}`;
+
+        boxHasil.innerHTML = `
+            <div class="sourcing-result">
+                <p>Klik tombol di bawah untuk membuka hasil pencarian "<strong>${barang}</strong>" di marketplace pilihan:</p>
+                <button class="btn btn-green" onclick="window.open('${urlTokopedia}', '_blank')" style="margin-bottom:8px;">🟢 Cek di Tokopedia</button>
+                <button class="btn" style="background:linear-gradient(135deg,#EE4D2D,#c0392b); margin-bottom:8px;" onclick="window.open('${urlShopee}', '_blank')">🟠 Cek di Shopee</button>
+                <button class="btn btn-dark" onclick="window.open('${urlBukalapak}', '_blank')">🔴 Cek di Bukalapak</button>
+            </div>
+        `;
+    }
+
+    // === HAPUS SEMUA DATA ===
+    function hapusSemuaDataPermanen() {
+        if (confirm("⚠️ PERHATIAN!\n\nAnda akan menghapus SEMUA data pelanggan dan kredit secara permanen.\n\nTindakan ini TIDAK DAPAT dibatalkan!\n\nLanjutkan?")) {
+            localStorage.removeItem("gadget_customers");
+            perbaruiDashboardDanKeuangan();
+            alert("✅ Semua data telah berhasil dihapus.");
+        }
+    }
+
+    // === TANYA CLAUDE AI ===
+    async function tanyaAsistenClaude() {
+        const promptUser = document.getElementById("pesanUser").value.trim();
+        const boxObrolan = document.getElementById("boxPercakapan");
+
+        if (!promptUser) return;
+
+        boxObrolan.innerHTML += `<div class="chat-bubble chat-user">${promptUser}</div>`;
+        document.getElementById("pesanUser").value = "";
+        boxObrolan.scrollTop = boxObrolan.scrollHeight;
+
+        const loadingEl = document.createElement('div');
+        loadingEl.className = 'chat-loading';
+        loadingEl.innerHTML = '<span></span><span></span><span></span>';
+        boxObrolan.appendChild(loadingEl);
+        boxObrolan.scrollTop = boxObrolan.scrollHeight;
+
+        const dataInternalSistem = localStorage.getItem("gadget_customers") || "[]";
+
+        try {
+            const response = await fetch("https://api.anthropic.com/v1/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "claude-haiku-4-5-20251001",
+                    max_tokens: 1000,
+                    system: `Anda adalah asisten AI internal cerdas untuk aplikasi kasir kredit toko gadget.
+Data pelanggan & keuangan saat ini (JSON):
+${dataInternalSistem}
+
+Jawab pertanyaan pemilik toko secara akurat, ramah, dan ringkas dalam Bahasa Indonesia.
+Jika diminta buatkan pesan tagihan, buat draf WhatsApp yang sopan sesuai data pelanggan.
+Jika data kosong, sampaikan bahwa belum ada data pelanggan yang tersimpan.`,
+                    messages: [{ role: "user", content: promptUser }]
+                })
+            });
+
+            const data = await response.json();
+            loadingEl.remove();
+
+            if (data.content && data.content[0]) {
+                const teks = data.content[0].text;
+                boxObrolan.innerHTML += `<div class="chat-bubble chat-ai">${teks}</div>`;
+            } else {
+                throw new Error(data.error?.message || "Respons tidak valid");
+            }
+        } catch (e) {
+            loadingEl.remove();
+            boxObrolan.innerHTML += `<div class="chat-bubble chat-ai" style="color:#c1121f; border-color:#fca5a5;">❌ Gagal menghubungi Claude AI.\n\nDetail: ${e.message}</div>`;
+        }
+
+        boxObrolan.scrollTop = boxObrolan.scrollHeight;
+    }
+</script>
+
+<!-- ===================== PWA SCRIPT ===================== -->
+<script>
+    let deferredInstallPrompt = null;
+
+    // ── Daftarkan Service Worker ──────────────────────────
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+            try {
+                const reg = await navigator.serviceWorker.register('./sw.js');
+                console.log('[PWA] Service Worker terdaftar:', reg.scope);
+
+                // Daftarkan Periodic Sync untuk cek jatuh tempo tiap hari
+                if ('periodicSync' in reg) {
+                    try {
+                        await reg.periodicSync.register('cek-jatuh-tempo', {
+                            minInterval: 24 * 60 * 60 * 1000 // 1x sehari
+                        });
+                        console.log('[PWA] Periodic Sync aktif');
+                    } catch (e) {
+                        console.log('[PWA] Periodic Sync tidak didukung:', e.message);
+                    }
+                }
+
+                // Dengarkan pesan dari Service Worker
+                navigator.serviceWorker.addEventListener('message', event => {
+                    if (event.data && event.data.type === 'MINTA_DATA_JATUH_TEMPO') {
+                        kirimDataKeServiceWorker();
+                    }
+                });
+
+            } catch (e) {
+                console.error('[PWA] Gagal daftar Service Worker:', e);
+            }
+        });
+    }
+
+    // ── Tangkap event install PWA ─────────────────────────
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        // Tampilkan banner install jika belum diinstall
+        if (!window.matchMedia('(display-mode: standalone)').matches) {
+            document.getElementById('bannerInstall').style.display = 'block';
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        document.getElementById('bannerInstall').style.display = 'none';
+        deferredInstallPrompt = null;
+        alert('✅ App berhasil diinstall! Cek layar utama HP Anda.');
+    });
+
+    // ── Fungsi Install PWA ────────────────────────────────
+    function installPWA() {
+        if (!deferredInstallPrompt) {
+            // Panduan manual untuk iOS / browser yang tidak support prompt otomatis
+            alert('📱 Cara install:\n\n• Chrome Android: Ketuk ⋮ (menu) → "Tambahkan ke layar utama"\n• Safari iOS: Ketuk □↑ (Share) → "Add to Home Screen"');
+            return;
+        }
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(result => {
+            if (result.outcome === 'accepted') {
+                document.getElementById('bannerInstall').style.display = 'none';
+            }
+            deferredInstallPrompt = null;
+        });
+    }
+
+    // ── Minta Izin Notifikasi ─────────────────────────────
+    async function mintaIzinNotifikasi() {
+        if (!('Notification' in window)) {
+            alert('Browser ini tidak mendukung notifikasi.');
+            return;
+        }
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            document.getElementById('bannerNotif').style.display = 'none';
+            localStorage.setItem('notif_izin', 'granted');
+            kirimDataKeServiceWorker();
+            jadwalkanCekHarian();
+            // Kirim notif tes
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'KIRIM_NOTIF_SEKARANG',
+                    title: '✅ Notifikasi Aktif!',
+                    body: 'Pengingat jatuh tempo akan muncul otomatis setiap hari.'
+                });
+            }
+        } else {
+            alert('⚠️ Izin notifikasi ditolak. Anda bisa mengaktifkannya nanti lewat pengaturan browser.');
+        }
+    }
+
+    // ── Cek status notif saat app dibuka ──────────────────
+    function cekStatusNotifikasi() {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'default') {
+            // Belum pernah diminta → tampilkan banner
+            document.getElementById('bannerNotif').style.display = 'block';
+        } else if (Notification.permission === 'granted') {
+            document.getElementById('bannerNotif').style.display = 'none';
+            jadwalkanCekHarian();
+        }
+    }
+
+    // ── Kirim data pelanggan ke Service Worker ────────────
+    function kirimDataKeServiceWorker() {
+        if (!navigator.serviceWorker.controller) return;
+        const pelanggan = JSON.parse(localStorage.getItem('gadget_customers')) || [];
+        navigator.serviceWorker.controller.postMessage({
+            type: 'SIMPAN_DATA_JATUH_TEMPO',
+            pelanggan
+        });
+    }
+
+    // ── Jadwalkan pengecekan harian (saat app aktif) ──────
+    function jadwalkanCekHarian() {
+        // Cek setiap 1 jam saat app terbuka
+        setInterval(() => {
+            if (Notification.permission === 'granted') {
+                cekJatuhTempoDanNotif();
+                kirimDataKeServiceWorker();
+            }
+        }, 60 * 60 * 1000); // tiap 1 jam
+
+        // Cek langsung saat buka app
+        cekJatuhTempoDanNotif();
+    }
+
+    // ── Logika cek jatuh tempo & kirim notif ─────────────
+    function cekJatuhTempoDanNotif() {
+        const pelanggan = JSON.parse(localStorage.getItem('gadget_customers')) || [];
+        if (pelanggan.length === 0) return;
+
+        const tglHariIni = new Date().getDate();
+        const h5List = pelanggan.filter(p => {
+            const selisih = parseInt(p.tglJatuhTempo) - tglHariIni;
+            return selisih >= 0 && selisih <= 5;
+        });
+
+        if (h5List.length === 0) return;
+
+        // Cegah notif duplikat di hari yang sama
+        const hariIni = new Date().toDateString();
+        const terakhirNotif = localStorage.getItem('terakhir_notif');
+        if (terakhirNotif === hariIni) return;
+        localStorage.setItem('terakhir_notif', hariIni);
+
+        const ringkasan = h5List.map(p => {
+            const selisih = parseInt(p.tglJatuhTempo) - tglHariIni;
+            return `${p.nama} — H-${selisih} (Rp ${(p.angsuranPerBulan||0).toLocaleString('id-ID')})`;
+        }).join('\n');
+
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: 'KIRIM_NOTIF_SEKARANG',
+                title: `⏰ ${h5List.length} Tagihan Akan Jatuh Tempo`,
+                body: ringkasan
+            });
+        }
+    }
+
+    // ── Hook ke window.onload yang sudah ada ─────────────
+    const _onloadAsli = window.onload;
+    window.onload = function() {
+        if (_onloadAsli) _onloadAsli();
+        cekStatusNotifikasi();
+        kirimDataKeServiceWorker();
+    };
+</script>
+
+</body>
+</html>

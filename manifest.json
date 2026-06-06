@@ -1,0 +1,25 @@
+{
+  "name": "Asisten Kredit Gadget",
+  "short_name": "KreditGadget",
+  "description": "Kelola kredit, piutang & keuangan toko gadget Anda",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8f6f1",
+  "theme_color": "#c9a84c",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
